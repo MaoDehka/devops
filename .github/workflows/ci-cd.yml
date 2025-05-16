@@ -19,6 +19,7 @@ jobs:
     needs:
       - build
     strategy:
+      fail-fast: false 
       matrix:
         browser: [chrome, firefox, edge]
     steps:
@@ -41,12 +42,13 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cypress-videos
+          name: cypress-videos-${{ matrix.browser }}  
           path: cypress/videos
           retention-days: 5
-      - uses: actions/upload-artifact@v4
+      - name: Upload Cypress screenshots 
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: cypress-screenshots
+          name: cypress-screenshots-${{ matrix.browser }} 
           path: cypress/screenshots
           retention-days: 5
