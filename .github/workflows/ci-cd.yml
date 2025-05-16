@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build
+    strategy:
+      matrix:
+        browser: [chrome, firefox, edge]
     steps:
       - uses: actions/checkout@v4
       - name: Restore cache (node_modules)
