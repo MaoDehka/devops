@@ -36,7 +36,8 @@ jobs:
           start: npm start
           wait-on: 'http://localhost:3000'
           browser: ${{ matrix.browser }}
-          headed: false      - name: Upload Cypress videos
+          headed: false      
+      - name: Upload Cypress videos
         uses: actions/upload-artifact@v4
         with:
           name: cypress-videos
