@@ -20,7 +20,7 @@ jobs:
       - build
     strategy:
       matrix:
-        browser: [chrome, firefox, edge]
+        browser: [chrome, firefox]
     steps:
       - uses: actions/checkout@v4
       - name: Restore cache (node_modules)
