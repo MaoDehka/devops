@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  nextjs-app:
+    image: ghcr.io/maodehka/devops:latest
+    container_name: nextjs-production
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
