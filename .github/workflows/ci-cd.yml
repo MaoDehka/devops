@@ -75,4 +75,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/devops:latest
+          tags: ghcr.io/https://github.com/MaoDehka/devops:latest
