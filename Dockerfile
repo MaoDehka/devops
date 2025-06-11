@@ -15,5 +15,10 @@ WORKDIR /app
 RUN npm install
 RUN npm run build
 
+EXPOSE 3000
+
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 ENTRYPOINT [ "entrypoint.sh" ]
 CMD [ "npm", "run", "start" ]
