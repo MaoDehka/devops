@@ -92,3 +92,18 @@ jobs:
             sudo docker compose -f docker-compose.prod.yml pull
             sudo docker compose -f docker-compose.prod.yml up -d
           
+  debug-ssh:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Debug SSH connection
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        
+        echo "=== Key format check ==="
+        head -n1 ~/.ssh/deploy_key
+        tail -n1 ~/.ssh/deploy_key
+        
+        echo "=== SSH connection test ==="
+        ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.EC2_SSH_USER }}@${{ secrets.EC2_HOST }} "echo 'Success!'"
