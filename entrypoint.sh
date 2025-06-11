@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "Bonjour"
+echo "Bonjour, le conteneur est lancé"
 
 npm install
 
