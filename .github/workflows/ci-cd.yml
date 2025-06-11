@@ -1,4 +1,10 @@
-on: [push]
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, prod, develop]
+  pull_request:
+    branches: [main, prod, develop]
 
 jobs:
   build:
@@ -17,8 +23,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs:
-      - build
+    needs: [build]
     strategy:
       fail-fast: false
       matrix:
@@ -57,12 +62,16 @@ jobs:
 
   build-push-docker:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/develop')
     permissions:
       contents: read
       packages: write
-    #needs: [test]
+    needs: [test]
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
     steps:
       - uses: actions/checkout@v4
+      
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -70,24 +79,41 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/maodehka/devops
+          tags: |
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=prod,enable=${{ github.ref == 'refs/heads/prod' }}
+            type=raw,value=test,enable=${{ github.ref == 'refs/heads/develop' }}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/maodehka/devops:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
-  deploy-docker:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u maodehka --password-stdin
-            cd prod
-            sudo docker compose -f docker-compose.prod.yml down
-            sudo docker compose -f docker-compose.prod.yml pull
-            sudo docker compose -f docker-compose.prod.yml up -d
+  deploy-production:
+    if: github.ref == 'refs/heads/prod'
+    needs: [build-push-docker]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: production
+      image-tag: prod
+      server-path: prod
+    secrets: inherit
+
+  deploy-test:
+    if: github.ref == 'refs/heads/develop'
+    needs: [build-push-docker]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: test
+      image-tag: test
+      server-path: test
+    secrets: inherit
