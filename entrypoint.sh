@@ -1,7 +1,10 @@
 #!/bin/sh
 
-echo "Bonjour, le conteneur est lancé"
+if [ "$NODE_ENV" = "development" ]; then
+  npm install
+  # composer i
+fi
 
-npm install
+# php artisan migrate
 
 exec "$@"
