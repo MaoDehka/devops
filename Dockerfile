@@ -13,8 +13,7 @@ ADD . /app/
 WORKDIR /app
 
 RUN npm install
-# RUN npm run build
+RUN npm run build
 
-EXPOSE 3000
-
-CMD npm run start
+ENTRYPOINT [ "entrypoint.sh" ]
+CMD [ "npm", "run", "start" ]
